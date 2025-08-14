@@ -14,7 +14,9 @@ const app = express();
 //     res.send("Amma behen pe aa jaunga mai")
 // });
 
-app.get("/user", (req, res) => {
+app.get("/user/:userId/:name", (req, res) => {
+    console.log(req.params);
+    
     res.send({fisrtName: "Sumit",
         lastName: "Jha"
     })

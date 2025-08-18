@@ -11,26 +11,30 @@ const app = express();
 //     res.send("Amma behen pe aa jaunga mai")
 // });
 
-app.get("/user/:userId/:name", (req, res) => {
-  console.log(req.params);
+// app.get("/user/:userId/:name", (req, res) => {
+//   console.log(req.params);
 
-  res.send({ fisrtName: "Sumit", lastName: "Jha" });
-});
+//   res.send({ fisrtName: "Sumit", lastName: "Jha" });
+// });
 
-app.post("/user", (req, res) => {
-  res.send("Data stored in DB successfully");
-});
+// app.post("/user", (req, res) => {
+//   res.send("Data stored in DB successfully");
+// });
 
-app.delete("/user", (req, res) => {
-  res.send("Data deleted successfully");
-});
+// app.delete("/user", (req, res) => {
+//   res.send("Data deleted successfully");
+// });
 
-app.patch("/user", (req, res) => {
-  res.send("Updated the database successfully");
-});
+// app.patch("/user", (req, res) => {
+//   res.send("Updated the database successfully");
+// });
 
-app.get("/", (req, res) => {
-  res.send("Welcome Back!")
+app.use("/", (req, res, next) => {
+  // res.send("Welcome Back!")
+  next();
+},
+(req, res) => {
+  res.send("I am the best!!!")
 });
 
 app.listen(4000, () => {

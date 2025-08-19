@@ -1,30 +1,38 @@
 const express = require("express");
-const {adminAuth} = require("./middlewares/adminAuth");
-const {userAuth} = require("./middlewares/userAuth");
+const connectDB = require("./Config/database");
+const User = require("./Models/users")
 
 const app = express();
- app.use(express.json());
 
-app.use("/admin", adminAuth)
 
-app.get("/admin/getAllData", (req, res) => {
-  console.log("Sending your all data");
-  res.send("Data has sent")
+app.post("/signup", async(req, res) => {
+  const userObj = {
+    firstName:"Sumit",
+    lastName: "Jha",
+    email: "sumit@jha.com",
+    password: "sumit@123"
+  }
+
+  const user = new User(userObj);
+try{
+  await user.save();
+  res.send("Data Added successfully!")
+} catch(err) {
+  res.status(400).send("Bad Request: " +err.message);
+}
+
 });
 
-app.post("/admin/updateData", (req, res) => {
-  console.log("Updata the data...");
-  res.send("Data has updated")
-});
 
-app.get("/user/getUser", userAuth, (req, res) => {
-  res.send("Sending data...")
-})
 
-app.get("/user/login",(req, res) => {
-  res.send("Logging in...")
-})
 
-app.listen(4000, () => {
-  console.log("Server is running perfectly on port 4000");
-});
+connectDB()
+  .then(() => {
+    console.log("Database connection is established");
+    app.listen(4000, () => {
+      console.log("Server is running perfectly on port 4000");
+    });
+  })
+  .catch((err) => {
+    console.log("Database cannot be established");
+  });

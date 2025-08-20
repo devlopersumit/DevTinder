@@ -35,20 +35,52 @@ app.get("/user", async (req, res) => {
 //FEED API - GET/feed - get all the users from database
 
 app.get("/feed", async (req, res) => {
-  try{
+  try {
     const users = await User.find({});
     res.send(users);
-  } catch(err) {
+  } catch (err) {
     res.status(400).send("Something went wrong");
   }
 });
 
 app.delete("/user", async (req, res) => {
-  try{
+  try {
     const userId = req.body.userId;
-   const user = await User.findByIdAndDelete(userId);
-   res.send("User Deleted successfully");
-  } catch(err){
+    const user = await User.findByIdAndDelete(userId);
+    res.send("User Deleted successfully");
+  } catch (err) {
+    res.status(400).send("Something went wrong");
+  }
+});
+
+//update data of the user using userId
+// app.patch("/user", async (req, res) => {
+
+//   const userId = req.body.userId;
+//   const data = req.body;
+//   try{
+//     await User.findByIdAndUpdate({_id:userId}, data);
+//     res.send('User Updated successfully');
+//   }catch(err) {
+//     res.status(400).send("Something went wrong");
+//   }
+// });
+
+//update data of the user using userId
+app.patch("/user", async (req, res) => {
+  const emailId = req.body.email;
+  const data = { ...req.body };
+  delete data.email; // Prevent overwriting the email field
+
+  try {
+    const updatedUser = await User.findOneAndUpdate({ email: emailId }, data, {
+      new: true,
+    });
+    if (!updatedUser) {
+      return res.status(404).send("User not found!");
+    }
+    res.send("User updated successfully using emailId");
+  } catch (err) {
     res.status(400).send("Something went wrong");
   }
 });

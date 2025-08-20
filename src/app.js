@@ -4,16 +4,13 @@ const User = require("./Models/users")
 
 const app = express();
 
+app.use(express.json());
 
 app.post("/signup", async(req, res) => {
-  const userObj = {
-    firstName:"Sumit",
-    lastName: "Jha",
-    email: "sumit@jha.com",
-    password: "sumit@123"
-  }
 
-  const user = new User(userObj);
+   console.log(req.body);
+
+    const user = new User(req.body);
 try{
   await user.save();
   res.send("Data Added successfully!")
@@ -23,9 +20,6 @@ try{
 
 });
 
-
-
-
 connectDB()
   .then(() => {
     console.log("Database connection is established");
@@ -34,5 +28,5 @@ connectDB()
     });
   })
   .catch((err) => {
-    console.log("Database cannot be established");
+    console.log("Database cannot be established " + err.message);
   });

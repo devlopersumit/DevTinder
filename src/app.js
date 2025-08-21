@@ -58,7 +58,7 @@ app.delete("/user", async (req, res) => {
 
 //update data of the user using userId
 app.patch("/user/:userId", async (req, res) => {
-  const userId = req.params.userId;
+  const userId = req.params?.userId;
   let data = req.body;
 
   try {
@@ -74,6 +74,10 @@ app.patch("/user/:userId", async (req, res) => {
     // Remove duplicates from skills array if present
     if (Array.isArray(data.skills)) {
       data.skills = [...new Set(data.skills)];
+    }
+
+    if(data?.skills.length > 10) {
+      throw new Error("Skills cannot be more than 10");
     }
 
     const updatedUser = await User.findByIdAndUpdate(userId, data, {

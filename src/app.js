@@ -7,9 +7,12 @@ const app = express();
 app.use(express.json());
 
 app.post("/signup", async (req, res) => {
-  //  console.log(req.body);
-
-  const user = new User(req.body);
+  const data = req.body;
+  // Remove duplicates from skills array if present
+  if (Array.isArray(data.skills)) {
+    data.skills = [...new Set(data.skills)];
+  }
+  const user = new User(data);
   try {
     await user.save();
     res.send("Data Added successfully!");
@@ -32,8 +35,8 @@ app.get("/user", async (req, res) => {
     res.status(400).send("Something went wrong");
   }
 });
-//FEED API - GET/feed - get all the users from database
 
+//FEED API - GET/feed - get all the users from database
 app.get("/feed", async (req, res) => {
   try {
     const users = await User.find({});
@@ -54,23 +57,48 @@ app.delete("/user", async (req, res) => {
 });
 
 //update data of the user using userId
-app.patch("/user", async (req, res) => {
+app.patch("/user/:userId", async (req, res) => {
+  const userId = req.params.userId;
+  let data = req.body;
 
-  const userId = req.body.userId;
-  const data = req.body;
-  try{
-    await User.findByIdAndUpdate({_id:userId}, data, {runValidators:true});
-    res.send('User Updated successfully');
-  }catch(err) {
-    res.status(400).send("Update FAiled "+ err.message);
+  try {
+    const ALLOWED_UPDATES = ["photoUrl", "about", "gender", "age", "skills"];
+    const isAllowedUpdates = Object.keys(data).every((k) =>
+      ALLOWED_UPDATES.includes(k)
+    );
+
+    if (!isAllowedUpdates) {
+      throw new Error("Update not allowed");
+    }
+
+    // Remove duplicates from skills array if present
+    if (Array.isArray(data.skills)) {
+      data.skills = [...new Set(data.skills)];
+    }
+
+    const updatedUser = await User.findByIdAndUpdate(userId, data, {
+      new: true,
+      runValidators: true,
+    });
+    if (!updatedUser) {
+      return res.status(404).send("User not found!");
+    }
+    res.send("User Updated successfully");
+  } catch (err) {
+    res.status(400).send("Update Failed " + err.message);
   }
 });
 
-//update data of the user using userId
+//update data of the user using email
 app.patch("/user", async (req, res) => {
   const emailId = req.body.email;
   const data = { ...req.body };
   delete data.email; // Prevent overwriting the email field
+
+  // Remove duplicates from skills array if present
+  if (Array.isArray(data.skills)) {
+    data.skills = [...new Set(data.skills)];
+  }
 
   try {
     const updatedUser = await User.findOneAndUpdate({ email: emailId }, data, {

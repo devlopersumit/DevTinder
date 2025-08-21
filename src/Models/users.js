@@ -31,7 +31,8 @@ const userSchema = new mongoose.Schema({
   },
   age: {
     type: Number,
-    minLength:14
+    minLength:14,
+    maxLength:80
   },
   gender: {
     type: String,
@@ -39,7 +40,8 @@ const userSchema = new mongoose.Schema({
       if(!["male", "female", "others"].includes(value)) {
          throw new Error("Gender is not valid");
       }
-    }
+    },
+    lowercase:true
   },
   photoUrl: {
     type: String

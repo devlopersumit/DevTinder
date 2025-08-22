@@ -1,6 +1,7 @@
 const express = require("express");
 const connectDB = require("./Config/database");
 const User = require("./Models/users");
+const validateSignupData = require("./utils/validation");
 
 const app = express();
 
@@ -8,12 +9,20 @@ app.use(express.json());
 
 app.post("/signup", async (req, res) => {
   const data = req.body;
+
   // Remove duplicates from skills array if present
   if (Array.isArray(data.skills)) {
     data.skills = [...new Set(data.skills)];
   }
-  const user = new User(data);
+
   try {
+    //Validate the data
+    validateSignupData(req);
+
+    //Encrypt the password
+
+    const user = new User(data);
+
     await user.save();
     res.send("Data Added successfully!");
   } catch (err) {
@@ -76,7 +85,7 @@ app.patch("/user/:userId", async (req, res) => {
       data.skills = [...new Set(data.skills)];
     }
 
-    if(data?.skills.length > 10) {
+    if (data?.skills.length > 10) {
       throw new Error("Skills cannot be more than 10");
     }
 

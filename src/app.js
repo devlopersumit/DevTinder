@@ -1,27 +1,33 @@
 const express = require("express");
 const connectDB = require("./Config/database");
 const User = require("./Models/users");
-const validateSignupData = require("./utils/validation");
+const { validateSignupData } = require("./utils/validation");
+const bcrypt = require("bcrypt");
 
 const app = express();
 
 app.use(express.json());
 
 app.post("/signup", async (req, res) => {
-  const data = req.body;
-
-  // Remove duplicates from skills array if present
-  if (Array.isArray(data.skills)) {
-    data.skills = [...new Set(data.skills)];
-  }
+ const { firstName, lastName, email, password } = req.body;
 
   try {
     //Validate the data
     validateSignupData(req);
 
+    const { password } = req.body;
+
     //Encrypt the password
 
-    const user = new User(data);
+    const passwordHash = await bcrypt.hash(password, 10);
+    console.log(passwordHash);
+
+    const user = new User({
+      firstName,
+      lastName,
+      email,
+      password: passwordHash,
+    });
 
     await user.save();
     res.send("Data Added successfully!");

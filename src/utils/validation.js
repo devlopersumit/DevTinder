@@ -8,7 +8,7 @@ const validateSignupData = (req) => {
     throw new Error("First Name must be lie between 4-50 character");
   } else if (firstName.length < 3 || firstName.length > 20) {
     throw new Error("Last Name must be lie between 4-20 character");
-  } else if (!validator.isEmail(email)) {
+  } else if (!validator.isEmail(email.trim())) {
     throw new Error("Email is not valid");
   } else if (!validator.isStrongPassword(password)) {
     throw new Error("Please enter a strong password");

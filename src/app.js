@@ -4,14 +4,17 @@ const User = require("./Models/users");
 const { validateSignupData } = require("./utils/validation");
 const bcrypt = require("bcrypt");
 const validator = require("validator");
+const cookieParser = require("cookie-parser");
+const jwt = require("jsonwebtoken");
 
 const app = express();
 
 app.use(express.json());
+app.use(cookieParser());
 
 //signup api
 app.post("/signup", async (req, res) => {
- const { firstName, lastName, email, password } = req.body;
+  const { firstName, lastName, email, password } = req.body;
 
   try {
     //Validate the data
@@ -22,7 +25,7 @@ app.post("/signup", async (req, res) => {
     //Encrypt the password
 
     const passwordHash = await bcrypt.hash(password, 10);
-    console.log(passwordHash);
+    // console.log(passwordHash);
 
     const user = new User({
       firstName,
@@ -40,32 +43,64 @@ app.post("/signup", async (req, res) => {
 
 //login api
 app.post("/login", async (req, res) => {
-  try{
-   
-    const {email, password} = req.body;
-    if(!validator.isEmail(email)) {
+  try {
+    const { email, password } = req.body;
+    if (!validator.isEmail(email)) {
       throw new Error("Email Id is not valid");
     }
 
-    const user = await User.findOne({email:email});
+    const user = await User.findOne({ email: email });
 
-    if(!user) {
+    if (!user) {
       throw new Error("Invalid Credentials");
     }
 
     const isPasswordValid = await bcrypt.compare(password, user.password);
 
-    if(isPasswordValid) {
+    if (isPasswordValid) {
+      //Create a JWT Token
+
+      const token = await jwt.sign({_id:user._id},"DEV@Tinder$790");
+      console.log(token);
+      
+      //Add the token to cookie and send the response back to the user
+      res.cookie("token", token);
+
       res.send("Login Successfull");
-    }
-    else {
+    } else {
       throw new Error("Invalid Credentials");
     }
-
   } catch (err) {
     res.status(400).send("Bad Request: " + err.message);
   }
-})
+});
+
+app.get("/profile", async (req, res) => {
+
+  try{
+
+  const cookie = req.cookies;
+
+   const { token } = cookie;
+   //Validate my token
+   if(!token) {
+    throw new Error("Invalid Token");
+   }
+
+   const decodedMessage = await jwt.verify(token, "DEV@Tinder$790");
+
+   const { _id } = decodedMessage;
+   
+   const user = await User.findById(_id);
+   if(!user) {
+    throw new Error("user not found");
+   }
+
+  res.send(user);
+  }catch(err) {
+    res.status(400).send("Error: " + err.message);
+  }
+});
 
 //GET User by email
 app.get("/user", async (req, res) => {

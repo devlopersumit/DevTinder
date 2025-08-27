@@ -7,7 +7,7 @@
 
 ##  profileRouter
 - GET /profile/view
-- PATCH /profile/update
+- PATCH /profile/edit
 - PATCH /profile/password
 
 ##  connectionRequest Router

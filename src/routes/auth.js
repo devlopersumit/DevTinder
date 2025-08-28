@@ -38,23 +38,24 @@ authRouter.post("/signup", async (req, res) => {
 authRouter.post("/login", async (req, res) => {
   try {
     const { email, password } = req.body;
-    
+
     if (!validator.isEmail(email)) {
       throw new Error("Email Id is not valid");
     }
 
-    const user = await User.findOne({ email:email});    
+    const user = await User.findOne({ email: email });
 
     if (!user) {
       throw new Error("Invalid Credentials");
     }
-    
-    const isPasswordValid = await bcrypt.compare(password, user.password);
-    
-    if (isPasswordValid) {
 
+    const isPasswordValid = await bcrypt.compare(password, user.password);
+
+    if (isPasswordValid) {
       //Create a JWT Token
-      const token = await jwt.sign({ _id: user._id }, "DEV@Tinder$790", {expiresIn:'7d'});
+      const token = await jwt.sign({ _id: user._id }, "DEV@Tinder$790", {
+        expiresIn: "7d",
+      });
 
       //Add the token to cookie and send the response back to the user
       res.cookie("token", token);
@@ -70,10 +71,10 @@ authRouter.post("/login", async (req, res) => {
 
 //logout api
 authRouter.post("/logout", async (req, res) => {
-    res.cookie("token", null, {
-        expires: new Date(Date.now()),
-    });
-    res.send("Log out Successfully!");
-})
+  res.cookie("token", null, {
+    expires: new Date(Date.now()),
+  });
+  res.send("Log out Successfully!");
+});
 
 module.exports = authRouter;

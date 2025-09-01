@@ -41,27 +41,22 @@ const userSchema = new mongoose.Schema(
     },
     age: {
       type: Number,
-      minLength: 14,
-      maxLength: 80,
+      min: 14,
+      max: 80,
     },
     gender: {
       type: String,
-      enum:{
-        values:["male", "female", "others"],
-        message:`${VALUE} is a not a valid gender`
+      enum: {
+        values: ["male", "female", "others"],
+        message: props => `${props.value} is not a valid gender`,
       },
-      // validate(value) {
-      //   if (!["male", "female", "others"].includes(value)) {
-      //     throw new Error("Gender is not valid");
-      //   }
-      // },
       lowercase: true,
     },
     photoUrl: {
       type: String,
       validate(value) {
         if (!validator.isURL(value)) {
-          throw new Error("Invalid Photo URL" + value);
+          throw new Error("Invalid Photo URL " + value);
         }
       },
     },

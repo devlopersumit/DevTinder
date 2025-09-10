@@ -9,7 +9,7 @@ const authRouter = express.Router();
 
 //signup api
 authRouter.post("/signup", async (req, res) => {
-  const { firstName, lastName, email, password } = req.body;
+  const { firstName, lastName, email, password,age, gender, photoUrl,about } = req.body;
 
   try {
     //Validate the data
@@ -25,6 +25,10 @@ authRouter.post("/signup", async (req, res) => {
       lastName,
       email,
       password: passwordHash,
+      age,
+      gender,
+      photoUrl,
+      about,
     });
 
     await user.save();

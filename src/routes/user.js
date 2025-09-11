@@ -40,21 +40,30 @@ userRouter.get("/user/connections", userAuth, async (req, res) => {
           status: "accepted",
         },
       ],
-    }).populate("fromUserId", USER_SAFE_DATA).populate("toUserId", USER_SAFE_DATA);
+    })
+      .populate("fromUserId", USER_SAFE_DATA)
+      .populate("toUserId", USER_SAFE_DATA);
 
-    const data = connectionRequest.map((row) => {
-        if(row.fromUserId._id.toString() === loggedInUser._id.toString()) {
-            return row.toUserId;
+    // Filter out requests with missing users
+    const data = connectionRequest
+      .map((row) => {
+        if (!row.fromUserId || !row.toUserId) return null; // skip broken references
+
+        if (row.fromUserId._id.toString() === loggedInUser._id.toString()) {
+          return row.toUserId;
         }
         return row.fromUserId;
-    });
+      })
+      .filter((user) => user !== null); // remove nulls safely
 
-    res.json({ data});
+    res.json({ data });
   } catch (err) {
     res.status(400).send("Error: " + err.message);
   }
 });
 
+
+//Feed API
 userRouter.get("/feed", userAuth, async (req, res) => {
   try{
     const loggedInUser = req.user;

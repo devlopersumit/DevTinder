@@ -31,7 +31,15 @@ authRouter.post("/signup", async (req, res) => {
       about,
     });
 
-    await user.save();
+    const savedUser = await user.save();
+
+          const token = await jwt.sign({ _id: user._id }, "DEV@Tinder$790", {
+        expiresIn: "7d",
+      });
+
+      //Add the token to cookie and send the response back to the user
+      res.cookie("token", token);
+      
     res.send("Data Added successfully!");
   } catch (err) {
     res.status(400).send("Bad Request: " + err.message);

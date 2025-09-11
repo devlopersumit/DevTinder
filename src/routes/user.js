@@ -65,21 +65,18 @@ userRouter.get("/user/connections", userAuth, async (req, res) => {
 
 //Feed API
 userRouter.get("/feed", userAuth, async (req, res) => {
-  try{
+  try {
     const loggedInUser = req.user;
     const page = parseInt(req.query.page) || 1;
     let limit = parseInt(req.query.limit) || 10;
-    limit = (limit>50) ? 50 : limit;
-    const skip = (page-1)*limit;
+    limit = limit > 50 ? 50 : limit;
+    const skip = (page - 1) * limit;
 
+    // Get all connection requests involving the logged-in user
     const connectionRequest = await ConnectionRequestModel.find({
       $or: [
-        {
-          fromUserId:loggedInUser._id
-        },
-        {
-          toUserId:loggedInUser._id
-        }
+        { fromUserId: loggedInUser._id },
+        { toUserId: loggedInUser._id }
       ],
     }).select("fromUserId toUserId");
 
@@ -89,21 +86,28 @@ userRouter.get("/feed", userAuth, async (req, res) => {
       hideUsersFromFeed.add(req.toUserId.toString());
     });
 
-    const users = await User.find({
-      $and: [
-        {
-          _id: {$nin: Array.from(hideUsersFromFeed)}
-        },
-        {
-          _id: {$ne: loggedInUser._id}
-        },
-      ],
+    // Always exclude self
+    hideUsersFromFeed.add(loggedInUser._id.toString());
+
+    // Fetch users excluding hidden ones
+    let users = await User.find({
+      _id: { $nin: Array.from(hideUsersFromFeed) }
     }).select(USER_SAFE_DATA).skip(skip).limit(limit);
 
-    res.json({data:users});
-  } catch(err) {
-  res.status(400).send("Error: " + err.message);
+    // If no users found, return some placeholder/dummy cards
+    if (users.length === 0) {
+      const dummyUsers = await User.find({
+        _id: { $ne: loggedInUser._id } // exclude self
+      }).select(USER_SAFE_DATA).limit(limit);
+
+      users = dummyUsers;
+    }
+
+    res.json({ data: users });
+  } catch (err) {
+    res.status(400).send("Error: " + err.message);
   }
 });
+
 
 module.exports = userRouter;
